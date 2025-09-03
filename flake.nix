@@ -48,10 +48,12 @@
             cargo-edit
             cargo-watch
             rust-analyzer
+            jack2
           ];
 
           buildInputs = with pkgs; [
             alsa-lib.dev
+            jack2
           ];
 
           env = {

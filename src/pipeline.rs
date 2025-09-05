@@ -14,6 +14,13 @@ use std::sync::{
     Arc,
 };
 
+// Import the effects modules
+use crate::effects::distortion::Distortion;
+// use crate::effects::delay::Delay;  // Uncomment when implemented
+// use crate::effects::reverb::Reverb;  // Uncomment when implemented
+
+
+
 #[derive(Parser, Debug)]
 #[command(version, about = "CPAL feedback example", long_about = None)]
 struct Opt {
@@ -112,6 +119,8 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     let ring = HeapRb::<f32>::new(latency_samples * 2);
     let (mut producer, mut consumer) = ring.split();
 
+    let distortion = Distortion::new();
+
     // Fill the samples with 0.0 equal to the length of the delay.
     for _ in 0..latency_samples {
         // The ring buffer has twice as much space as necessary to add latency here,
@@ -122,6 +131,7 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         let mut output_fell_behind = false;
         for &sample in data {
+            let sample = distortion.process(sample);
             if producer.try_push(sample).is_err() {
                 output_fell_behind = true;
             }

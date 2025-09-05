@@ -14,6 +14,7 @@ use std::sync::{
 
 mod pipeline;
 mod ui;
+mod effects;
 
 
 

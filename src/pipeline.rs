@@ -16,7 +16,7 @@ use std::sync::{
 
 // Import the effects modules
 use crate::effects::distortion::Distortion;
-// use crate::effects::delay::Delay;  // Uncomment when implemented
+use crate::effects::delay::Delay;
 // use crate::effects::reverb::Reverb;  // Uncomment when implemented
 
 
@@ -115,11 +115,14 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     let latency_frames = (opt.latency / 1_000.0) * config.sample_rate.0 as f32;
     let latency_samples = latency_frames as usize * config.channels as usize;
 
+    println!("{0}", config.sample_rate.0 as usize);
+    println!("hello world {}", config.sample_rate.0 as usize);
+
     // The buffer to share samples
     let ring = HeapRb::<f32>::new(latency_samples * 2);
     let (mut producer, mut consumer) = ring.split();
 
-    let distortion = Distortion::new();
+    
 
     // Fill the samples with 0.0 equal to the length of the delay.
     for _ in 0..latency_samples {
@@ -128,10 +131,15 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
         producer.try_push(0.0).unwrap();
     }
 
+    let distortion = Distortion::new();
+    let mut delay = Delay::new((config.sample_rate.0 as f32 * config.channels as f32));
+
+
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         let mut output_fell_behind = false;
         for &sample in data {
             let sample = distortion.process(sample);
+            let sample = delay.process(sample);
             if producer.try_push(sample).is_err() {
                 output_fell_behind = true;
             }

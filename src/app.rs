@@ -1,6 +1,6 @@
 use std::io;
 
-use crossterm::{event::{self, Event, KeyCode, KeyEvent, KeyEventKind}, terminal::enable_raw_mode};
+use crossterm::{event::{self, Event, KeyCode, KeyEvent, KeyEventKind}, terminal::{disable_raw_mode, enable_raw_mode}};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -19,7 +19,9 @@ use crate::ui;
 
 pub fn init_ui(running: Arc<AtomicBool>) -> io::Result<()> {
     let mut terminal = ratatui::init();
-    let app_result = App::default().run(&mut terminal, running);
+    let mut app = App::new(running);
+    let app_result = app.run(&mut terminal);
+    disable_raw_mode()?;
     ratatui::restore();
     app_result
 }
@@ -35,7 +37,7 @@ pub struct App<'a> {
 impl<'a> App<'a> {
     pub fn new(running: Arc<AtomicBool>) -> Self {
         App {
-            tabs: TabsState::new(vec!["Tab0", "Tab1", "Tab2"]),
+            tabs: TabsState::new(vec!["Distorion", "Delay", "Reverb"]),
             running,
             exit: false,
             counter: 0,
@@ -43,8 +45,8 @@ impl<'a> App<'a> {
     }
 
     /// runs the application's main loop until the user quits
-    pub fn run(&mut self, terminal: &mut DefaultTerminal, running: Arc<AtomicBool>) -> io::Result<()> {
-        self.running = running;
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
+        
         enable_raw_mode()?;
         while !self.exit {
             terminal.draw(|frame| ui::draw(frame, self))?;
@@ -82,10 +84,12 @@ impl<'a> App<'a> {
 
     fn increment_counter(&mut self) {
         self.counter += 1;
+        self.tabs.next();
     }
 
     fn decrement_counter(&mut self) {
         self.counter -= 1;
+        self.tabs.previous();
     }
 }
 

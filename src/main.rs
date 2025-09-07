@@ -13,8 +13,10 @@ use std::sync::{
 
 
 mod pipeline;
-mod ui;
+mod app;
 mod effects;
+mod ui;
+mod effect_ui;
 
 
 
@@ -24,7 +26,7 @@ fn main() -> anyhow::Result<()> {
     let ui_running = Arc::clone(&running);
 
     let pipeline_handle = thread::spawn(|| pipeline::init_pipeline(pipeline_running).unwrap());
-    let ui_handle = thread::spawn(|| ui::init_ui(ui_running).unwrap());
+    let ui_handle = thread::spawn(|| app::init_ui(ui_running).unwrap());
 
     pipeline_handle.join().unwrap();
     ui_handle.join().unwrap();

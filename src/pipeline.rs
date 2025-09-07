@@ -115,8 +115,7 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     let latency_frames = (opt.latency / 1_000.0) * config.sample_rate.0 as f32;
     let latency_samples = latency_frames as usize * config.channels as usize;
 
-    println!("{0}", config.sample_rate.0 as usize);
-    println!("hello world {}", config.sample_rate.0 as usize);
+    //println!("{}", config.sample_rate.0 as usize);
 
     // The buffer to share samples
     let ring = HeapRb::<f32>::new(latency_samples * 2);

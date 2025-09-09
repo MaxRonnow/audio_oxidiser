@@ -3,23 +3,19 @@
 
 // Some code taken from the CPAL Feedback example
 
+use crate::EffectParams;
+use crate::effects::delay::Delay;
+use crate::effects::distortion::Distortion;
 use clap::Parser;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use ringbuf::{
-    traits::{Consumer, Producer, Split},
     HeapRb,
+    traits::{Consumer, Producer, Split},
 };
 use std::sync::{
+    Arc, Mutex,
     atomic::{AtomicBool, Ordering},
-    Arc,
 };
-
-// Import the effects modules
-use crate::effects::distortion::Distortion;
-use crate::effects::delay::Delay;
-// use crate::effects::reverb::Reverb;  // Uncomment when implemented
-
-
 
 #[derive(Parser, Debug)]
 #[command(version, about = "CPAL feedback example", long_about = None)]
@@ -51,7 +47,10 @@ struct Opt {
     jack: bool,
 }
 
-pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
+pub fn init_pipeline(
+    running: Arc<AtomicBool>,
+    effect_params: Arc<Mutex<EffectParams>>,
+) -> anyhow::Result<()> {
     let opt = Opt::parse();
 
     // Conditionally compile with jack if the feature is specified.
@@ -121,8 +120,6 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     let ring = HeapRb::<f32>::new(latency_samples * 2);
     let (mut producer, mut consumer) = ring.split();
 
-    
-
     // Fill the samples with 0.0 equal to the length of the delay.
     for _ in 0..latency_samples {
         // The ring buffer has twice as much space as necessary to add latency here,
@@ -131,8 +128,10 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     }
 
     let distortion = Distortion::new();
-    let mut delay = Delay::new((config.sample_rate.0 as f32 * config.channels as f32));
-
+    let mut delay = Delay::new(
+        (config.sample_rate.0 as f32 * config.channels as f32),
+        effect_params,
+    );
 
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {
         let mut output_fell_behind = false;
@@ -178,9 +177,7 @@ pub fn init_pipeline(running: Arc<AtomicBool>) -> anyhow::Result<()> {
     input_stream.play()?;
     output_stream.play()?;
 
-    while running.load(Ordering::SeqCst) {
-
-    }
+    while running.load(Ordering::SeqCst) {}
 
     // Run for 3 seconds before closing.
     //println!("Playing for 3 seconds... ");

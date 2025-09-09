@@ -1,25 +1,24 @@
-use std::io;
-
-use crossterm::{event::{self, Event, KeyCode, KeyEvent, KeyEventKind}, terminal::{disable_raw_mode, enable_raw_mode}};
+use crate::EffectParams;
+use crate::ui;
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+    terminal::{disable_raw_mode, enable_raw_mode},
+};
 use ratatui::{
+    DefaultTerminal, Frame,
     buffer::Buffer,
     layout::Rect,
     style::Stylize,
     symbols::border,
     text::{Line, Text},
     widgets::{Block, Paragraph, Widget},
-    DefaultTerminal, Frame,
 };
-use std::sync::{
-    atomic::{AtomicBool},
-    Arc,
-};
-use crate::ui;
+use std::io;
+use std::sync::{Arc, Mutex, atomic::AtomicBool};
 
-
-pub fn init_ui(running: Arc<AtomicBool>) -> io::Result<()> {
+pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<Mutex<EffectParams>>) -> io::Result<()> {
     let mut terminal = ratatui::init();
-    let mut app = App::new(running);
+    let mut app = App::new(running, ui_params);
     let app_result = app.run(&mut terminal);
     disable_raw_mode()?;
     ratatui::restore();
@@ -32,21 +31,22 @@ pub struct App<'a> {
     exit: bool,
     running: Arc<AtomicBool>,
     pub tabs: TabsState<'a>,
+    ui_params: Arc<Mutex<EffectParams>>,
 }
 
 impl<'a> App<'a> {
-    pub fn new(running: Arc<AtomicBool>) -> Self {
+    pub fn new(running: Arc<AtomicBool>, ui_params: Arc<Mutex<EffectParams>>) -> Self {
         App {
             tabs: TabsState::new(vec!["Distorion", "Delay", "Reverb"]),
             running,
             exit: false,
             counter: 0,
+            ui_params,
         }
     }
 
     /// runs the application's main loop until the user quits
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
-        
         enable_raw_mode()?;
         while !self.exit {
             terminal.draw(|frame| ui::draw(frame, self))?;
@@ -79,7 +79,8 @@ impl<'a> App<'a> {
 
     fn exit(&mut self) {
         self.exit = true;
-        self.running.store(false, std::sync::atomic::Ordering::SeqCst);
+        self.running
+            .store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
     fn increment_counter(&mut self) {

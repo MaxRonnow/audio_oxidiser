@@ -16,7 +16,7 @@ use ratatui::{
 use std::io;
 use std::sync::{Arc, Mutex, atomic::AtomicBool};
 
-pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<Mutex<EffectParams>>) -> io::Result<()> {
+pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> io::Result<()> {
     let mut terminal = ratatui::init();
     let mut app = App::new(running, ui_params);
     let app_result = app.run(&mut terminal);
@@ -31,11 +31,11 @@ pub struct App<'a> {
     exit: bool,
     running: Arc<AtomicBool>,
     pub tabs: TabsState<'a>,
-    ui_params: Arc<Mutex<EffectParams>>,
+    ui_params: Arc<EffectParams>,
 }
 
 impl<'a> App<'a> {
-    pub fn new(running: Arc<AtomicBool>, ui_params: Arc<Mutex<EffectParams>>) -> Self {
+    pub fn new(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> Self {
         App {
             tabs: TabsState::new(vec!["Distorion", "Delay", "Reverb"]),
             running,

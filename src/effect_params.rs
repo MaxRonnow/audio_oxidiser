@@ -1,3 +1,6 @@
+use portable_atomic::AtomicF32;
+use std::sync::{Arc, atomic::AtomicBool};
+
 #[derive(Debug)]
 pub struct EffectParams {
     pub distortion: DistortionParams,
@@ -15,34 +18,34 @@ impl Default for EffectParams {
 
 #[derive(Debug)]
 pub struct DistortionParams {
-    pub bypass: bool,
-    pub level: f32,
-    pub distortion: f32,
+    pub bypass: AtomicBool,
+    pub level: AtomicF32,
+    pub distortion: AtomicF32,
 }
 
 impl Default for DistortionParams {
     fn default() -> Self {
         Self {
-            bypass: false,
-            level: 1.0,
-            distortion: 0.5,
+            bypass: AtomicBool::new(false),
+            level: AtomicF32::new(1.0),
+            distortion: AtomicF32::new(0.5),
         }
     }
 }
 
 #[derive(Debug)]
 pub struct DelayParams {
-    pub bypass: bool,
-    pub time: f32,
-    pub decay: f32,
+    pub bypass: AtomicBool,
+    pub time: AtomicF32,
+    pub decay: AtomicF32,
 }
 
 impl Default for DelayParams {
     fn default() -> Self {
         Self {
-            bypass: false,
-            time: 0.5,
-            decay: 0.8,
+            bypass: AtomicBool::new(false),
+            time: AtomicF32::new(0.5),
+            decay: AtomicF32::new(0.8),
         }
     }
 }

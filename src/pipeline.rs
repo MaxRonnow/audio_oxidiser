@@ -49,7 +49,7 @@ struct Opt {
 
 pub fn init_pipeline(
     running: Arc<AtomicBool>,
-    effect_params: Arc<Mutex<EffectParams>>,
+    effect_params: Arc<EffectParams>,
 ) -> anyhow::Result<()> {
     let opt = Opt::parse();
 
@@ -127,10 +127,10 @@ pub fn init_pipeline(
         producer.try_push(0.0).unwrap();
     }
 
-    let distortion = Distortion::new();
+    let distortion = Distortion::new(Arc::clone(&effect_params));
     let mut delay = Delay::new(
         (config.sample_rate.0 as f32 * config.channels as f32),
-        effect_params,
+        Arc::clone(&effect_params),
     );
 
     let input_data_fn = move |data: &[f32], _: &cpal::InputCallbackInfo| {

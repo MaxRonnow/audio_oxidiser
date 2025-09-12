@@ -14,7 +14,10 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
 };
 use std::io;
-use std::sync::{Arc, Mutex, atomic::AtomicBool};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 
 pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> io::Result<()> {
     let mut terminal = ratatui::init();
@@ -27,28 +30,26 @@ pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> io::Re
 
 #[derive(Debug, Default)]
 pub struct App<'a> {
-    counter: u8,
-    exit: bool,
     running: Arc<AtomicBool>,
     pub tabs: TabsState<'a>,
-    ui_params: Arc<EffectParams>,
+    effect_params: Arc<EffectParams>,
+    param_selection: ParamSelection,
 }
 
 impl<'a> App<'a> {
-    pub fn new(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> Self {
+    pub fn new(running: Arc<AtomicBool>, effect_params: Arc<EffectParams>) -> Self {
         App {
             tabs: TabsState::new(vec!["Distorion", "Delay", "Reverb"]),
             running,
-            exit: false,
-            counter: 0,
-            ui_params,
+            effect_params,
+            param_selection: ParamSelection::new(),
         }
     }
 
     /// runs the application's main loop until the user quits
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         enable_raw_mode()?;
-        while !self.exit {
+        while self.running.load(Ordering::SeqCst) {
             terminal.draw(|frame| ui::draw(frame, self))?;
             self.handle_events()?;
         }
@@ -71,56 +72,25 @@ impl<'a> App<'a> {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Left => self.decrement_counter(),
-            KeyCode::Right => self.increment_counter(),
+            KeyCode::Left => self.previous_tab(),
+            KeyCode::Right => self.next_tab(),
             _ => {}
         }
     }
 
     fn exit(&mut self) {
-        self.exit = true;
         self.running
             .store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
-    fn increment_counter(&mut self) {
-        self.counter += 1;
+    fn next_tab(&mut self) {
         self.tabs.next();
     }
 
-    fn decrement_counter(&mut self) {
-        self.counter -= 1;
+    fn previous_tab(&mut self) {
         self.tabs.previous();
     }
 }
-
-//impl Widget for &App {
-//    fn render(self, area: Rect, buf: &mut Buffer) {
-//        let title = Line::from(" Counter App Tutorial ".bold());
-//        let instructions = Line::from(vec![
-//            " Decrement ".into(),
-//            "<Left>".blue().bold(),
-//            " Increment ".into(),
-//            "<Right>".blue().bold(),
-//            " Quit ".into(),
-//            "<Q> ".blue().bold(),
-//        ]);
-//        let block = Block::bordered()
-//            .title(title.centered())
-//            .title_bottom(instructions.centered())
-//            .border_set(border::THICK);
-//
-//        let counter_text = Text::from(vec![Line::from(vec![
-//            "Value: ".into(),
-//            self.counter.to_string().yellow(),
-//        ])]);
-//
-//        Paragraph::new(counter_text)
-//            .centered()
-//            .block(block)
-//            .render(area, buf);
-//    }
-//}
 
 #[derive(Debug, Default)]
 pub struct TabsState<'a> {
@@ -141,6 +111,32 @@ impl<'a> TabsState<'a> {
             self.index -= 1;
         } else {
             self.index = self.titles.len() - 1;
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ParamSelection {
+    delay_index: usize,
+    distortion_index: usize,
+    reverb_index: usize,
+}
+
+impl ParamSelection {
+    pub fn new() -> Self {
+        Self {
+            delay_index: 0,
+            distortion_index: 0,
+            reverb_index: 0,
+        }
+    }
+
+    pub fn next(&mut self, selected_effect: usize) {
+        match selected_effect {
+            0 => self.distortion_index = (self.distortion_index + 1) % 3,
+            1 => self.delay_index = (self.delay_index + 1) % 3,
+            2 => self.reverb_index = (self.delay_index + 1) % 3,
+            _ => {}
         }
     }
 }

@@ -5,7 +5,6 @@
 //!
 //! Uses a delay of `LATENCY_MS` milliseconds in case the default input and output streams are not
 //! precisely synchronised.
-use std::sync::Mutex;
 use std::sync::{Arc, atomic::AtomicBool};
 use std::thread;
 

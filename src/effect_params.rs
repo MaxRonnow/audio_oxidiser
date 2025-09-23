@@ -20,7 +20,9 @@ impl Default for EffectParams {
 pub struct DistortionParams {
     pub bypass: AtomicBool,
     pub level: AtomicF32,
+    pub level_min_max: Vec<AtomicF32>,
     pub distortion: AtomicF32,
+    pub distortion_min_max: Vec<AtomicF32>,
 }
 
 impl Default for DistortionParams {
@@ -28,7 +30,9 @@ impl Default for DistortionParams {
         Self {
             bypass: AtomicBool::new(false),
             level: AtomicF32::new(1.0),
+            level_min_max: vec![AtomicF32::new(0.0), AtomicF32::new(1.0)],
             distortion: AtomicF32::new(0.5),
+            distortion_min_max: vec![AtomicF32::new(0.0), AtomicF32::new(1.0)],
         }
     }
 }
@@ -37,7 +41,9 @@ impl Default for DistortionParams {
 pub struct DelayParams {
     pub bypass: AtomicBool,
     pub time: AtomicF32,
+    pub time_min_max: Vec<AtomicF32>,
     pub decay: AtomicF32,
+    pub decay_min_max: Vec<AtomicF32>,
 }
 
 impl Default for DelayParams {
@@ -45,7 +51,9 @@ impl Default for DelayParams {
         Self {
             bypass: AtomicBool::new(false),
             time: AtomicF32::new(0.5),
+            time_min_max: vec![AtomicF32::new(0.0), AtomicF32::new(4.0)],
             decay: AtomicF32::new(0.8),
+            decay_min_max: vec![AtomicF32::new(0.0), AtomicF32::new(1.0)],
         }
     }
 }

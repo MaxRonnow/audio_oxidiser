@@ -28,7 +28,7 @@ pub fn draw_distortion(frame: &mut Frame, app: &mut App, area: Rect) {
     ));
     frame.render_widget(block, area);
     let mut knob = param_widget::ParamWidget::new("distortion", 0.5, 0.0, 1.0);
-    knob.value = 1.0;
+    knob.value = 0.9;
     // let text = Span::from("bruh");
     // frame.render_widget(text, chunks[0]);
     knob.draw_knob(frame, app, chunks[1]);

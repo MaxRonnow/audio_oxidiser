@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::app::{App, ParamSelection};
 use ratatui::{
     Frame,
     layout::{
@@ -22,14 +22,17 @@ pub struct ParamWidget {
     pub value: f32,
     knob: Circle,
     line: Line,
+    selected: bool,
+    name: String,
 }
 
 impl ParamWidget {
-    pub fn new(name: &str, value: f32, min: f32, max: f32) -> Self {
+    pub fn new(name: String, value: f32, min: f32, max: f32) -> Self {
         ParamWidget {
             min,
             max,
             value,
+            name,
             knob: Circle {
                 x: 0.0,
                 y: 0.0,
@@ -43,6 +46,7 @@ impl ParamWidget {
                 y2: 1.0,
                 color: Color::White,
             },
+            selected: false,
         }
     }
 
@@ -52,7 +56,7 @@ impl ParamWidget {
         self.line.y2 = 4.0 * f32::sin(angle) as f64;
 
         let chunks =
-            Layout::vertical([Length(2), Length(5), Length(8), Length(10), Min(0)]).split(area);
+            Layout::vertical([Length(2), Length(1), Length(8), Length(1), Min(0)]).split(area);
 
         let knob = Canvas::default()
             //.block(Block::bordered().title("knob"))
@@ -64,8 +68,16 @@ impl ParamWidget {
             .x_bounds([-6.0, 6.0])
             .y_bounds([-6.0, 6.0]);
 
-        let title = Span::from("bruh");
-        let value = Span::from("value");
+        let mut title = Span::styled(&self.name, Style::default()).into_centered_line();
+        if self.selected {
+            title = Span::styled(
+                &self.name,
+                Style::default().add_modifier(Modifier::REVERSED),
+            )
+            .into_centered_line();
+        }
+
+        let value = Span::from("value").into_centered_line();
         frame.render_widget(title, chunks[1]);
         frame.render_widget(knob, chunks[2]);
         frame.render_widget(value, chunks[3]);

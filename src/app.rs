@@ -28,7 +28,6 @@ pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> io::Re
     app_result
 }
 
-#[derive(Debug, Default)]
 pub struct App<'a> {
     running: Arc<AtomicBool>,
     pub tabs: TabsState<'a>,
@@ -72,8 +71,11 @@ impl<'a> App<'a> {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Left => self.previous_tab(),
-            KeyCode::Right => self.next_tab(),
+            KeyCode::Left => self.previous_param(),
+            KeyCode::Right => self.next_param(),
+            //KeyCode::Up => self.increase_param(),
+            //KeyCode::Down => self.decrease_param(),
+            KeyCode::Tab => self.next_tab(),
             _ => {}
         }
     }
@@ -89,6 +91,32 @@ impl<'a> App<'a> {
 
     fn previous_tab(&mut self) {
         self.tabs.previous();
+    }
+
+    //fn decrease_param(&mut self) {
+    //    match self.tabs.index {
+    //        0 =>
+    //        1 =>
+    //        2 =>
+    //        _ => {}
+    //    }
+    //}
+
+    //fn increase_param(&mut self) {
+    //    match self.tabs.index {
+    //        0 =>
+    //        1 =>
+    //        2 =>
+    //        _ => {}
+    //    }
+    // }
+
+    fn next_param(&mut self) {
+        self.param_selection.next(self.tabs.index);
+    }
+
+    fn previous_param(&mut self) {
+        self.param_selection.previous(self.tabs.index);
     }
 }
 
@@ -136,6 +164,33 @@ impl ParamSelection {
             0 => self.distortion_index = (self.distortion_index + 1) % 3,
             1 => self.delay_index = (self.delay_index + 1) % 3,
             2 => self.reverb_index = (self.delay_index + 1) % 3,
+            _ => {}
+        }
+    }
+
+    pub fn previous(&mut self, selected_effect: usize) {
+        match selected_effect {
+            0 => {
+                if self.distortion_index > 0 {
+                    self.distortion_index -= 1;
+                } else {
+                    self.distortion_index = 3;
+                }
+            }
+            1 => {
+                if self.distortion_index > 0 {
+                    self.distortion_index -= 1;
+                } else {
+                    self.distortion_index = 3;
+                }
+            }
+            2 => {
+                if self.distortion_index > 0 {
+                    self.distortion_index -= 1;
+                } else {
+                    self.distortion_index = 3;
+                }
+            }
             _ => {}
         }
     }

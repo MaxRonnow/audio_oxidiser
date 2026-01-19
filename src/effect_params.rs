@@ -1,22 +1,33 @@
 use portable_atomic::AtomicF32;
 use std::sync::{Arc, atomic::AtomicBool};
 
-#[derive(Debug)]
+pub enum EffectType {
+    Distortion(DistortionParams),
+    Delay(DelayParams),
+}
+
 pub struct EffectParams {
     pub distortion: DistortionParams,
     pub delay: DelayParams,
 }
 
-impl Default for EffectParams {
-    fn default() -> Self {
+impl EffectParams {
+    pub fn new() -> Self {
         Self {
-            distortion: DistortionParams::default(),
-            delay: DelayParams::default(),
+            distortion: DistortionParams::new(),
+            delay: DelayParams::new(),
         }
     }
 }
 
-#[derive(Debug)]
+pub enum DistortionEnum {
+    Bypass,
+    Level,
+    Distortion,
+    LevelMinMax,
+    DistortionMinMax,
+}
+
 pub struct DistortionParams {
     pub bypass: AtomicBool,
     pub level: AtomicF32,
@@ -25,8 +36,8 @@ pub struct DistortionParams {
     pub distortion_min_max: Vec<AtomicF32>,
 }
 
-impl Default for DistortionParams {
-    fn default() -> Self {
+impl DistortionParams {
+    pub fn new() -> Self {
         Self {
             bypass: AtomicBool::new(false),
             level: AtomicF32::new(1.0),
@@ -35,9 +46,12 @@ impl Default for DistortionParams {
             distortion_min_max: vec![AtomicF32::new(0.0), AtomicF32::new(1.0)],
         }
     }
+
+    //pub fn get_param_names(&self) -> Vec<&str> {
+    //    vec!["bypass", "level", "distortion"]
+    //}
 }
 
-#[derive(Debug)]
 pub struct DelayParams {
     pub bypass: AtomicBool,
     pub time: AtomicF32,
@@ -46,8 +60,8 @@ pub struct DelayParams {
     pub decay_min_max: Vec<AtomicF32>,
 }
 
-impl Default for DelayParams {
-    fn default() -> Self {
+impl DelayParams {
+    fn new() -> Self {
         Self {
             bypass: AtomicBool::new(false),
             time: AtomicF32::new(0.5),

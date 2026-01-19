@@ -22,7 +22,7 @@ fn main() -> anyhow::Result<()> {
     let pipeline_running = Arc::clone(&running);
     let ui_running = Arc::clone(&running);
 
-    let params = Arc::new(EffectParams::default());
+    let params = Arc::new(EffectParams::new());
     let ui_params = Arc::clone(&params);
     let pipeline_params = Arc::clone(&params);
 

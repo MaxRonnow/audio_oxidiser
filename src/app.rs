@@ -31,8 +31,8 @@ pub fn init_ui(running: Arc<AtomicBool>, ui_params: Arc<EffectParams>) -> io::Re
 pub struct App<'a> {
     running: Arc<AtomicBool>,
     pub tabs: TabsState<'a>,
-    effect_params: Arc<EffectParams>,
-    param_selection: ParamSelection,
+    pub effect_params: Arc<EffectParams>,
+    pub param_selection: ParamSelection,
 }
 
 impl<'a> App<'a> {
@@ -145,9 +145,9 @@ impl<'a> TabsState<'a> {
 
 #[derive(Debug, Default)]
 pub struct ParamSelection {
-    delay_index: usize,
-    distortion_index: usize,
-    reverb_index: usize,
+    pub delay_index: usize,
+    pub distortion_index: usize,
+    pub reverb_index: usize,
 }
 
 impl ParamSelection {
@@ -161,7 +161,7 @@ impl ParamSelection {
 
     pub fn next(&mut self, selected_effect: usize) {
         match selected_effect {
-            0 => self.distortion_index = (self.distortion_index + 1) % 3,
+            0 => self.distortion_index = (self.distortion_index + 1) % 2,
             1 => self.delay_index = (self.delay_index + 1) % 3,
             2 => self.reverb_index = (self.delay_index + 1) % 3,
             _ => {}

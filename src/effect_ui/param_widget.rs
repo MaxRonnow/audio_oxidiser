@@ -22,7 +22,7 @@ pub struct ParamWidget {
     pub value: f32,
     knob: Circle,
     line: Line,
-    selected: bool,
+    pub selected: bool,
     name: String,
 }
 

@@ -1,4 +1,5 @@
 use crate::effect_ui::param_widget;
+use std::sync::{Arc, Mutex, atomic::Ordering};
 
 use ratatui::{
     Frame,
@@ -32,12 +33,18 @@ pub fn draw_distortion(frame: &mut Frame, app: &mut App, area: Rect) {
         param_widget::ParamWidget::new("Distortion".to_string(), 0.5, 0.0, 1.0);
 
     let selected = app.param_selection.distortion_index;
+
     match selected {
         0 => volume_knob.selected = true,
         1 => distortion_knob.selected = true,
         _ => {}
     }
-    volume_knob.value = 0.9;
+    volume_knob.value = app.effect_params.distortion.level.load(Ordering::Relaxed) as f32;
+    distortion_knob.value = app
+        .effect_params
+        .distortion
+        .distortion
+        .load(Ordering::Relaxed) as f32;
 
     volume_knob.draw_knob(frame, app, chunks[1]);
     distortion_knob.draw_knob(frame, app, chunks[2]);

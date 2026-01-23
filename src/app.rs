@@ -73,8 +73,8 @@ impl<'a> App<'a> {
             KeyCode::Char('q') => self.exit(),
             KeyCode::Left => self.previous_param(),
             KeyCode::Right => self.next_param(),
-            //KeyCode::Up => self.increase_param(),
-            //KeyCode::Down => self.decrease_param(),
+            KeyCode::Up => self.increase_param(),
+            KeyCode::Down => self.decrease_param(),
             KeyCode::Tab => self.next_tab(),
             _ => {}
         }
@@ -93,23 +93,41 @@ impl<'a> App<'a> {
         self.tabs.previous();
     }
 
-    //fn decrease_param(&mut self) {
-    //    match self.tabs.index {
-    //        0 =>
-    //        1 =>
-    //        2 =>
-    //        _ => {}
-    //    }
-    //}
+    fn decrease_param(&mut self) {
+        match self.tabs.index {
+            0 => self.change_distortion_param(-0.02),
+            //1 => self.change_delay_param(-0.1),
+            //2 => self.change_reverb_param(-0.1),
+            _ => {}
+        }
+    }
 
-    //fn increase_param(&mut self) {
-    //    match self.tabs.index {
-    //        0 =>
-    //        1 =>
-    //        2 =>
-    //        _ => {}
-    //    }
-    // }
+    fn increase_param(&mut self) {
+        match self.tabs.index {
+            0 => self.change_distortion_param(0.02),
+            //1 => self.change_delay_param(0.1),
+            //2 => self.change_reverb_param(0.1),
+            _ => {}
+        }
+    }
+
+    fn change_distortion_param(&mut self, amount: f32) {
+        match self.param_selection.distortion_index {
+            0 => self.effect_params.distortion.level.store(
+                self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount,
+                Ordering::Relaxed,
+            ),
+            1 => self.effect_params.distortion.distortion.store(
+                self.effect_params
+                    .distortion
+                    .distortion
+                    .load(Ordering::Relaxed) as f32
+                    + amount,
+                Ordering::Relaxed,
+            ),
+            _ => {}
+        }
+    }
 
     fn next_param(&mut self) {
         self.param_selection.next(self.tabs.index);

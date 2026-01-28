@@ -13,20 +13,20 @@ use ringbuf::{
     traits::{Consumer, Producer, Split},
 };
 use std::sync::{
-    Arc, Mutex,
+    Arc,
     atomic::{AtomicBool, Ordering},
 };
 
 #[derive(Parser, Debug)]
-#[command(version, about = "CPAL feedback example", long_about = None)]
+#[command(version, about = "TUI audio effects suite", long_about = None)]
 struct Opt {
     /// The input audio device to use
-    #[arg(short, long, value_name = "IN", default_value_t = String::from("default"))]
-    input_device: String,
+    #[arg(short, long, value_name = "IN")]
+    input_device: Option<String>,
 
     /// The output audio device to use
-    #[arg(short, long, value_name = "OUT", default_value_t = String::from("default"))]
-    output_device: String,
+    #[arg(short, long, value_name = "OUT")]
+    output_device: Option<String>,
 
     /// Specify the delay between input and output
     #[arg(short, long, value_name = "DELAY_MS", default_value_t = 150.0)]
@@ -52,6 +52,7 @@ pub fn init_pipeline(
     effect_params: Arc<EffectParams>,
 ) -> anyhow::Result<()> {
     let opt = Opt::parse();
+    println!("bruh");
 
     // Conditionally compile with jack if the feature is specified.
     #[cfg(all(
@@ -88,19 +89,19 @@ pub fn init_pipeline(
     let host = cpal::default_host();
 
     // Find devices.
-    let input_device = if opt.input_device == "default" {
-        host.default_input_device()
+    let input_device = if let Some(device) = opt.input_device {
+        let id = &device.parse().expect("failed to parse input device id");
+        host.device_by_id(id)
     } else {
-        host.input_devices()?
-            .find(|x| x.name().map(|y| y == opt.input_device).unwrap_or(false))
+        host.default_input_device()
     }
     .expect("failed to find input device");
 
-    let output_device = if opt.output_device == "default" {
-        host.default_output_device()
+    let output_device = if let Some(device) = opt.output_device {
+        let id = &device.parse().expect("failed to parse output device id");
+        host.device_by_id(id)
     } else {
-        host.output_devices()?
-            .find(|x| x.name().map(|y| y == opt.output_device).unwrap_or(false))
+        host.default_output_device()
     }
     .expect("failed to find output device");
 
@@ -111,7 +112,7 @@ pub fn init_pipeline(
     let config: cpal::StreamConfig = input_device.default_input_config()?.into();
 
     // Create a delay in case the input and output devices aren't synced.
-    let latency_frames = (opt.latency / 1_000.0) * config.sample_rate.0 as f32;
+    let latency_frames = (opt.latency / 1_000.0) * config.sample_rate as f32;
     let latency_samples = latency_frames as usize * config.channels as usize;
 
     //println!("{}", config.sample_rate.0 as usize);
@@ -129,7 +130,7 @@ pub fn init_pipeline(
 
     let distortion = Distortion::new(Arc::clone(&effect_params));
     let mut delay = Delay::new(
-        (config.sample_rate.0 as f32 * config.channels as f32),
+        config.sample_rate as f32 * config.channels as f32,
         Arc::clone(&effect_params),
     );
 

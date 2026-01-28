@@ -5,10 +5,9 @@
 //!
 //! Uses a delay of `LATENCY_MS` milliseconds in case the default input and output streams are not
 //! precisely synchronised.
+use effect_params::EffectParams;
 use std::sync::{Arc, atomic::AtomicBool};
 use std::thread;
-
-use effect_params::EffectParams;
 
 mod app;
 mod effect_params;
@@ -26,9 +25,14 @@ fn main() -> anyhow::Result<()> {
     let ui_params = Arc::clone(&params);
     let pipeline_params = Arc::clone(&params);
 
-    let pipeline_handle =
-        thread::spawn(|| pipeline::init_pipeline(pipeline_running, pipeline_params).unwrap());
-    let ui_handle = thread::spawn(|| app::init_ui(ui_running, ui_params).unwrap());
+    let pipeline_handle = thread::Builder::new()
+        .name("pipeline".to_string())
+        .spawn(move || pipeline::init_pipeline(pipeline_running, pipeline_params).unwrap())
+        .unwrap();
+    let ui_handle = thread::Builder::new()
+        .name("ui".to_string())
+        .spawn(move || app::init_ui(ui_running, ui_params).unwrap())
+        .unwrap();
 
     pipeline_handle.join().unwrap();
     ui_handle.join().unwrap();

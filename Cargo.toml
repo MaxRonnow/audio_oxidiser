@@ -1,17 +1,17 @@
 [package]
-name = "audio_effects"
+name = "audio_oxidiser"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-cpal = { version = "0.16.0", features = ["jack"] }
+cpal = { version = "0.17.1", features = ["jack"] }
 dasp = "0.11.0"
-anyhow = "1.0.91"
-ringbuf = "0.4.7"
-clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0.100"
+ringbuf = "0.4.8"
+clap = { version = "4.5.55", features = ["derive"] }
 ratatui = "0.29.0"
 crossterm = "0.29.0"
 portable-atomic = { version = "1.11.1", features = ["float", "std"] }
 
-[features]
-jack = ["cpal/jack"]
+#[features]
+# jack = ["cpal/jack"]

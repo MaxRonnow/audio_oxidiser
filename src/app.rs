@@ -113,10 +113,16 @@ impl<'a> App<'a> {
 
     fn change_distortion_param(&mut self, amount: f32) {
         match self.param_selection.distortion_index {
-            0 => self.effect_params.distortion.level.store(
-                self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount,
-                Ordering::Relaxed,
-            ),
+            0 => {
+                if self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount
+                    >= 0.0
+                {
+                    self.effect_params.distortion.level.store(
+                        self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount,
+                        Ordering::Relaxed,
+                    );
+                }
+            }
             1 => self.effect_params.distortion.distortion.store(
                 self.effect_params
                     .distortion

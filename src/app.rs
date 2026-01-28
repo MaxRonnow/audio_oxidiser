@@ -95,7 +95,7 @@ impl<'a> App<'a> {
 
     fn decrease_param(&mut self) {
         match self.tabs.index {
-            0 => self.change_distortion_param(-0.02),
+            0 => self.change_distortion_param(-0.01),
             //1 => self.change_delay_param(-0.1),
             //2 => self.change_reverb_param(-0.1),
             _ => {}
@@ -104,7 +104,7 @@ impl<'a> App<'a> {
 
     fn increase_param(&mut self) {
         match self.tabs.index {
-            0 => self.change_distortion_param(0.02),
+            0 => self.change_distortion_param(0.01),
             //1 => self.change_delay_param(0.1),
             //2 => self.change_reverb_param(0.1),
             _ => {}
@@ -114,23 +114,32 @@ impl<'a> App<'a> {
     fn change_distortion_param(&mut self, amount: f32) {
         match self.param_selection.distortion_index {
             0 => {
-                if self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount
-                    >= 0.0
-                {
-                    self.effect_params.distortion.level.store(
-                        self.effect_params.distortion.level.load(Ordering::Relaxed) as f32 + amount,
+                let current_level =
+                    self.effect_params.distortion.level.load(Ordering::Relaxed) as f32;
+                if -0.01 < current_level + amount && current_level + amount < 1.01 {
+                    self.effect_params
+                        .distortion
+                        .level
+                        .store(current_level + amount, Ordering::Relaxed);
+                }
+            }
+            1 => {
+                let current_dist = self
+                    .effect_params
+                    .distortion
+                    .distortion
+                    .load(Ordering::Relaxed) as f32;
+                if -0.01 < current_dist + amount && current_dist + amount < 1.01 {
+                    self.effect_params.distortion.distortion.store(
+                        self.effect_params
+                            .distortion
+                            .distortion
+                            .load(Ordering::Relaxed) as f32
+                            + amount,
                         Ordering::Relaxed,
                     );
                 }
             }
-            1 => self.effect_params.distortion.distortion.store(
-                self.effect_params
-                    .distortion
-                    .distortion
-                    .load(Ordering::Relaxed) as f32
-                    + amount,
-                Ordering::Relaxed,
-            ),
             _ => {}
         }
     }

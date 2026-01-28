@@ -77,7 +77,7 @@ impl ParamWidget {
             .into_centered_line();
         }
 
-        let value = Span::from("value").into_centered_line();
+        let value = Span::from(self.value.to_string()).into_centered_line();
         frame.render_widget(title, chunks[1]);
         frame.render_widget(knob, chunks[2]);
         frame.render_widget(value, chunks[3]);

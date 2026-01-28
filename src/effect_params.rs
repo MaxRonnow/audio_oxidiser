@@ -1,5 +1,8 @@
 use portable_atomic::AtomicF32;
-use std::sync::{Arc, atomic::AtomicBool};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 
 pub enum EffectType {
     Distortion(DistortionParams),
@@ -21,11 +24,11 @@ impl EffectParams {
 }
 
 pub enum DistortionEnum {
-    Bypass,
-    Level,
-    Distortion,
-    LevelMinMax,
-    DistortionMinMax,
+    Bypass(AtomicBool),
+    Level(AtomicF32),
+    Distortion(AtomicF32),
+    LevelMinMax { min: AtomicF32, max: AtomicF32 },
+    DistortionMinMax { min: AtomicF32, max: AtomicF32 },
 }
 
 pub struct DistortionParams {
@@ -47,9 +50,16 @@ impl DistortionParams {
         }
     }
 
-    //pub fn get_param_names(&self) -> Vec<&str> {
-    //    vec!["bypass", "level", "distortion"]
-    //}
+    pub fn change_level(&self, value: f32) {
+        self.level.store(
+            self.level.load(Ordering::Relaxed) + value * 0.1,
+            Ordering::Relaxed,
+        );
+    }
+
+    pub fn change_distortion(&self, value: f32) {
+        self.distortion.store(value, Ordering::Relaxed);
+    }
 }
 
 pub struct DelayParams {

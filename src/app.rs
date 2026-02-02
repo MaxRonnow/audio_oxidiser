@@ -116,7 +116,7 @@ impl<'a> App<'a> {
             0 => {
                 let current_level =
                     self.effect_params.distortion.level.load(Ordering::Relaxed) as f32;
-                if -0.01 < current_level + amount && current_level + amount < 1.01 {
+                if -0.0 < current_level + amount && current_level + amount < 1.0 {
                     self.effect_params
                         .distortion
                         .level
